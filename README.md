@@ -22,16 +22,16 @@
 ## 🏗️ 系统架构
 
 ```
-Android (SLS 音乐记录器)
-        │  每隔1秒推送播放状态
+Android (LobstaTracker)
+        │  推送播放状态与音频规格数据
         ▼
-loc.tcrrry.com (Cloudflare Worker — worker.js)
+yourdomain.com/api/status (Cloudflare Worker — worker.js)
         │  写入 KV 数据库
         ▼
 Cloudflare KV (slideshow_images / lyric_cache / status)
-        │  读取展示
+        │  读取数据并渲染网页
         ▼
-tcrrry.com (Cloudflare Worker — tcrrry-home.js)
+yourdomain.com (Cloudflare Worker — tcrrry-home.js)
         ▲
 OpenWrt 路由器 (router_scraper.py)
   每10分钟爬取微博/B站/抖音
