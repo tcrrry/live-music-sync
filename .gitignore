@@ -1,0 +1,58 @@
+# Byte-compiled / optimized / DLL files
+__pycache__/
+*.py[cod]
+*$py.class
+
+# === SENSITIVE: Credentials & Secrets ===
+.env
+*.key
+*.pem
+
+# === SENSITIVE: Personal state & cache files ===
+hxy_scraper_state.json
+posts_result.json
+search_result.json
+covers_output.txt
+probe_output.txt
+probe_full.html
+lyric_utf8.txt
+
+# === SENSITIVE: SSH deploy and helper scripts ===
+ssh_*.py
+
+
+
+# === Debug / Test / Utility scripts (personal tooling) ===
+test_*.py
+check_*.py
+inspect_*.py
+debug_fetch.py
+probe_*.py
+fetch_full.py
+resolve_*.py
+verify_cf.py
+trigger.py
+compress.py
+summarize_json.py
+save_posts_json.py
+search_weibo_users.py
+read_xhshow_client.py
+xhshow_imports.py
+download_*.py
+abogus_downloaded.py
+gmssl_*.py
+update_slideshow_rolling.py
+
+
+# === Metadata & temp files ===
+metadata.json
+metadata_home.json
+scraper_metadata.json
+*.bat
+
+# === Scratch directory ===
+scratch/
+
+# === OS files ===
+.DS_Store
+Thumbs.db
