@@ -146,10 +146,21 @@ python ssh_deploy.py
 
 ### 第七步：配置播放状态上报
 
-使用安卓设备上的 **SLS 音乐记录器**（Scrobbler for Last.fm）或任何能发送 HTTP POST 的工具，将当前播放的歌曲信息定期推送到：
+你可以使用本项目自带的 Android 客户端 **LobstaTracker**，或者使用支持自定义 Webhook 的第三方工具。
+
+#### 选项 A：使用项目内置的安卓客户端 LobstaTracker（推荐）
+本项目在 [lobstatracker-android](file:///d:/antigravity/cloudflareTcrrry.com/lobstatracker-android) 目录中附带了配套的 Android 客户端 App 源码：
+1. 使用 **Android Studio** 打开 `lobstatracker-android` 文件夹。
+2. 打开 `app/src/main/kotlin/org/lobsta/lobstatracker/LocationService.kt`：
+   * 修改第 62 行的 `serverUrl`：将 `yourdomain.com` 替换为**你自己的域名**（或者云端 API 的完整 URL）。
+   * 修改第 378 行和 438 行：将 `YOUR_PUSH_TOKEN` 替换为**你自定义的推送验证 Token**。
+3. 编译打包生成 APK 并安装到手机上，开启权限并点击“开始追踪”，即可实现后台低功耗的音乐进度同步、蓝牙设备读取和音质硬件信息实时监测。
+
+#### 选项 B：使用第三方工具（如 SLS 音乐记录器）
+使用安卓设备上的 **SLS 音乐记录器**（Scrobbler for Last.fm）或任何能发送标准 HTTP POST 的工具，配置 Webhook 将当前播放的歌曲信息定期推送到：
 
 ```
-POST https://loc.yourdomain.com/api/status
+POST https://yourdomain.com/api/status
 Content-Type: application/json
 
 {

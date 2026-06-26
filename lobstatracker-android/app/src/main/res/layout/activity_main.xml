@@ -1,0 +1,203 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:orientation="vertical"
+    android:padding="16dp"
+    android:background="#1E1E1E">
+
+    <TextView
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="🦞 LobstaTracker"
+        android:textSize="22sp"
+        android:textColor="#FF8C00"
+        android:textStyle="bold"
+        android:layout_marginBottom="4dp" />
+
+    <TextView
+        android:id="@+id/tv_status"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="就绪"
+        android:textSize="14sp"
+        android:textColor="#B0B0B0"
+        android:layout_marginBottom="12dp" />
+
+    <TextView
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="📍 最新位置"
+        android:textSize="15sp"
+        android:textColor="#FFFFFF"
+        android:textStyle="bold"
+        android:layout_marginBottom="4dp" />
+
+    <TextView
+        android:id="@+id/tv_location"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="等待位置…"
+        android:textSize="13sp"
+        android:textColor="#99CCFF"
+        android:layout_marginBottom="4dp" />
+
+    <TextView
+        android:id="@+id/tv_time"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text=""
+        android:textSize="12sp"
+        android:textColor="#808080"
+        android:layout_marginBottom="12dp" />
+
+    <Button
+        android:id="@+id/btn_toggle"
+        android:layout_width="match_parent"
+        android:layout_height="48dp"
+        android:text="▶ 开始追踪"
+        android:textSize="16sp"
+        android:textColor="#FFFFFF"
+        android:backgroundTint="#4CAF50"
+        android:layout_marginBottom="12dp" />
+
+    <TextView
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="⚙ 设置"
+        android:textSize="14sp"
+        android:textColor="#FFFFFF"
+        android:textStyle="bold"
+        android:layout_marginBottom="6dp" />
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="36dp"
+        android:orientation="horizontal"
+        android:gravity="center_vertical"
+        android:layout_marginBottom="4dp">
+
+        <TextView
+            android:layout_width="60dp"
+            android:layout_height="wrap_content"
+            android:text="间隔:"
+            android:textSize="14sp"
+            android:textColor="#CCCCCC" />
+
+        <EditText
+            android:id="@+id/et_interval"
+            android:layout_width="0dp"
+            android:layout_height="match_parent"
+            android:layout_weight="1"
+            android:text="30"
+            android:textSize="14sp"
+            android:textColor="#FFFFFF"
+            android:background="#333333"
+            android:padding="4dp"
+            android:inputType="number" />
+
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text=" 秒"
+            android:textSize="14sp"
+            android:textColor="#CCCCCC"
+            android:layout_marginStart="4dp" />
+
+        <Button
+            android:id="@+id/btn_apply"
+            android:layout_width="wrap_content"
+            android:layout_height="match_parent"
+            android:text="应用"
+            android:textSize="12sp"
+            android:textColor="#FFFFFF"
+            android:backgroundTint="#555555"
+            android:layout_marginStart="8dp" />
+    </LinearLayout>
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="36dp"
+        android:orientation="horizontal"
+        android:gravity="center_vertical"
+        android:layout_marginBottom="4dp">
+
+        <TextView
+            android:layout_width="60dp"
+            android:layout_height="wrap_content"
+            android:text="音频:"
+            android:textSize="14sp"
+            android:textColor="#CCCCCC" />
+
+        <EditText
+            android:id="@+id/et_audio_interval"
+            android:layout_width="0dp"
+            android:layout_height="match_parent"
+            android:layout_weight="1"
+            android:text="60"
+            android:textSize="14sp"
+            android:textColor="#FFFFFF"
+            android:background="#333333"
+            android:padding="4dp"
+            android:inputType="number" />
+
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text=" 秒"
+            android:textSize="14sp"
+            android:textColor="#CCCCCC"
+            android:layout_marginStart="4dp" />
+
+        <Button
+            android:id="@+id/btn_audio_apply"
+            android:layout_width="wrap_content"
+            android:layout_height="match_parent"
+            android:text="应用"
+            android:textSize="12sp"
+            android:textColor="#FFFFFF"
+            android:backgroundTint="#555555"
+            android:layout_marginStart="8dp" />
+    </LinearLayout>
+
+    <TextView
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="📋 日志"
+        android:textSize="14sp"
+        android:textColor="#FFFFFF"
+        android:textStyle="bold"
+        android:layout_marginTop="8dp"
+        android:layout_marginBottom="4dp" />
+
+    <Button
+        android:id="@+id/btn_copy_log"
+        android:layout_width="wrap_content"
+        android:layout_height="30dp"
+        android:text="📋 复制日志"
+        android:textSize="12sp"
+        android:textColor="#FFFFFF"
+        android:backgroundTint="#555555"
+        android:layout_marginBottom="4dp" />
+
+    <ScrollView
+        android:id="@+id/scroll_log"
+        android:layout_width="match_parent"
+        android:layout_height="0dp"
+        android:layout_weight="1"
+        android:background="#252525"
+        android:padding="6dp">
+
+        <TextView
+            android:id="@+id/tv_log"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text=""
+            android:textSize="10sp"
+            android:textColor="#808080"
+            android:fontFamily="monospace"
+            android:lineSpacingExtra="2dp" />
+
+    </ScrollView>
+
+</LinearLayout>
