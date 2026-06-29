@@ -56,3 +56,6 @@ scratch/
 # === OS files ===
 .DS_Store
 Thumbs.db
+
+lobstatracker-android/app/build/
+lobstatracker-android/.gradle/
