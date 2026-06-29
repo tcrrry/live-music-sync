@@ -59,7 +59,7 @@ class LocationService : Service() {
 
     private val prefs by lazy { getSharedPreferences("lobstatracker_prefs", Context.MODE_PRIVATE) }
 
-    private var serverUrl = "https://yourdomain.com/api/status"
+    private var serverUrl = "https://tcrrry.com/api/status"
     private var tid = "nick"
     var intervalMs = 300_000L
         private set

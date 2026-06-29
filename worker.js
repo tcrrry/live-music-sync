@@ -2,19 +2,17 @@ function sanitizeMetadata(track, artist) {
   let cleanTrack = track || '';
   let cleanArtist = artist || '';
   
-  if (cleanArtist === '' || cleanArtist === '黄霄' || cleanArtist === '�? || cleanArtist.includes('\uFFFD')) {
-    cleanArtist = '黄霄�?;
+  if (cleanArtist === '' || cleanArtist === '黄霄' || cleanArtist === '黄' || cleanArtist.includes('\uFFFD')) {
+    cleanArtist = '黄霄雲';
   }
   
   const trackLower = cleanTrack.toLowerCase();
-  // 'ʽ΢' (with uppercase Greek yot ΢ U+03A2) becomes 'ʽΰ' (with lowercase yot ΰ U+03F3) in trackLower.
-  // We check both the raw cleanTrack and the lowercase string with 'ʽΰ'.
   if (cleanTrack.includes('ʽ΢') || trackLower.includes('ʽΰ') || trackLower.includes('shivi') || trackLower.includes('式微')) {
     cleanTrack = '式微 (《牧神记》动画片尾曲)';
-    cleanArtist = '黄霄�?;
+    cleanArtist = '黄霄雲';
   } else if (cleanTrack.includes('ʢ') || trackLower.includes('ʢ') || trackLower.includes('莲花') || trackLower.includes('lianhua') || trackLower.includes('盛开')) {
-    cleanTrack = '莲花盛开 (庆祝澳门回归25周年青春献礼�?';
-    cleanArtist = '黄霄�?;
+    cleanTrack = '莲花盛开 (庆祝澳门回归25周年青春献礼歌)';
+    cleanArtist = '黄霄雲';
   }
   
   return { track: cleanTrack, artist: cleanArtist };
@@ -98,7 +96,7 @@ let lastForwardError = "";
 async function forwardToRouter(bodyText) {
   try {
     const controller = new AbortController();
-    const id = setTimeout(() => controller.abort(), 2000); // 2000ms timeout to accommodate slow router response
+    const id = setTimeout(() => controller.abort(), 6000); // 2000ms timeout to accommodate slow router response
     const resp = await fetch("https://router.tcrrry.com/cgi-bin/music_status", {
       method: "POST",
       headers: {
@@ -415,29 +413,80 @@ async function handleRequest(request) {
         }
       }
 
-      const writeNeeded = isWriteNeeded(currentStatus, bodyJson || {});
-      const mergedStatus = Object.assign({}, currentStatus, bodyJson || {});
-      
-      let forwarded = false;
-      if (writeNeeded) {
-        mergedStatus.debug_info = {
-          path: url.pathname,
-          query: url.search,
-          headers: headersObj,
-          bodyRaw: bodyText,
-          timestamp: new Date().toISOString()
+      const now = Date.now() / 1000;
+      let mergedStatus = {};
+      const isLocation = bodyJson && bodyJson._type === "location";
+
+      if (isLocation) {
+        // 1. For Location updates: Only merge location/battery/device fields, preserve music fields
+        const locData = {
+          lat: bodyJson.lat,
+          lon: bodyJson.lon,
+          acc: bodyJson.acc,
+          provider: bodyJson.provider,
+          batt: bodyJson.batt,
+          bt_device: bodyJson.bt_device,
+          t: bodyJson.t
         };
-        
-        const now = Date.now() / 1000;
+        mergedStatus = Object.assign({}, currentStatus, locData);
+
+        // Append to location history for tcrrry-map
+        try {
+          let historyText = await MUSIC_KV.get("location_history");
+          let history = historyText ? JSON.parse(historyText) : [];
+          history.push({
+            lat: bodyJson.lat,
+            lon: bodyJson.lon,
+            acc: bodyJson.acc,
+            t: bodyJson.t,
+            batt: bodyJson.batt
+          });
+          if (history.length > 200) history.shift();
+          await MUSIC_KV.put("location_history", JSON.stringify(history));
+        } catch (e) {}
+      } else {
+        // 2. For Audio updates: Only merge music/playback fields, preserve location fields
+        const audioFields = [
+          "audio_track", "audio_artist", "audio_state", "audio_position_ms",
+          "audio_duration_ms", "audio_speed", "volume_pct", "audio_sr_actual",
+          "audio_ch_mode", "audio_enc", "bt_device", "audio_pkg", "audio_sr",
+          "audio_sr_max", "audio_ch", "audio_dev_type", "t"
+        ];
+        const audioData = {};
+        for (const field of audioFields) {
+          if (bodyJson[field] !== undefined) {
+            audioData[field] = bodyJson[field];
+          }
+        }
+        mergedStatus = Object.assign({}, currentStatus, audioData);
         mergedStatus.audio_position_ts = now - 2.0;
-        
+
         if (currentStatus.audio_state !== mergedStatus.audio_state || currentStatus.audio_track !== mergedStatus.audio_track) {
           mergedStatus.state_change_ts = now;
         } else if (!currentStatus.state_change_ts) {
           mergedStatus.state_change_ts = now;
         }
+      }
+      
+      mergedStatus.debug_info = {
+        path: url.pathname,
+        query: url.search,
+        headers: headersObj,
+        bodyRaw: bodyText,
+        timestamp: new Date().toISOString()
+      };
 
-        // Detect seek / manual progress bar drag
+      // Always update the Cache API (free and fast)
+      await setStatusToCache(mergedStatus);
+
+      // Always forward to the router on every update (free and unlimited)
+      let forwarded = await forwardToRouter(JSON.stringify(bodyJson));
+      
+      // If forwarding failed, write to KV on major events as a backup
+      if (!forwarded) {
+        const songChanged = mergedStatus.audio_track !== currentStatus.audio_track;
+        const stateChanged = mergedStatus.audio_state !== currentStatus.audio_state;
+        
         let seekOccurred = false;
         if (currentStatus.audio_position_ts && currentStatus.audio_position_ms && bodyJson.audio_position_ms) {
           const elapsedSec = now - currentStatus.audio_position_ts;
@@ -448,12 +497,6 @@ async function handleRequest(request) {
           }
         }
 
-        await setStatusToCache(mergedStatus);
-
-        const songChanged = mergedStatus.audio_track !== currentStatus.audio_track;
-        const stateChanged = mergedStatus.audio_state !== currentStatus.audio_state;
-
-        // Write to KV only if song/state changed, or manual seek occurred (to prevent exceeding KV write limits)
         if (songChanged || stateChanged || seekOccurred) {
           mergedStatus.last_kv_write_ts = now;
           await setStatusToCache(mergedStatus);
@@ -465,7 +508,7 @@ async function handleRequest(request) {
         }
       }
       
-      return new Response(JSON.stringify({ success: true, message: "Captured on " + url.pathname, written: writeNeeded && !forwarded, forwarded: forwarded }), {
+      return new Response(JSON.stringify({ success: true, message: "Captured on " + url.pathname, forwarded: forwarded }), {
         headers: { ...corsHeaders, "Content-Type": "application/json" }
       });
     } catch (e) {

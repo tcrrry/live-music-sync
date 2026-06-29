@@ -1113,6 +1113,7 @@ async function handleRequest(request, event) {
 
   let lastfmTrack = '', lastfmArtist = '', lastfmArt = '', lastfmNowPlaying = false;
   let fetchedFromRouter = false;
+  let statusFromRouter = null;
 
   // Always fetch Last.fm concurrently to support instant song switching ("秒切")
   const lastfmPromise = fetch('https://ws.audioscrobbler.com/2.0/?method=user.getrecenttracks&user=tcrrry&api_key=b25b959554ed76058ac220b7b2e0a026&format=json&limit=15').catch(() => null);
@@ -1192,7 +1193,7 @@ async function handleRequest(request, event) {
   } else {
     // KV status is stale or missing - fetch from router and await Last.fm concurrently
     const routerController = new AbortController();
-    const routerTimeout = setTimeout(() => routerController.abort(), 2000); // 2000ms timeout to accommodate slow router response
+    const routerTimeout = setTimeout(() => routerController.abort(), 6000); // 2000ms timeout to accommodate slow router response
 
     try {
       const [routerResp, lastfmResp] = await Promise.all([
@@ -1213,6 +1214,7 @@ async function handleRequest(request, event) {
         if (!ct.includes("html")) {
           const text = await routerResp.text();
           const dd = JSON.parse(text);
+          statusFromRouter = dd;
           const rawTrack = dd.audio_track || '';
           const rawArtist = dd.audio_artist || '';
           const rawPkg = dd.audio_pkg || '';
@@ -1349,11 +1351,11 @@ async function handleRequest(request, event) {
 
   // If Last.fm is currently playing, override track/artist with Last.fm's clean names
   if (lastfmNowPlaying && lastfmTrack) {
-    const lastTrack = statusFromKV ? (statusFromKV.audio_track || '') : '';
+    const lastTrack = (statusFromRouter && statusFromRouter.audio_track) || (statusFromKV ? (statusFromKV.audio_track || '') : '');
     const isSameSong = (lastTrack && cleanName(lastfmTrack).toLowerCase() === cleanName(lastTrack).toLowerCase());
     
     const phoneIsFresh = (positionTs > 0 && (nowSec - positionTs <= 70));
-    const phoneWasPaused = (statusFromKV && statusFromKV.audio_state === 'paused');
+    const phoneWasPaused = (statusFromRouter && statusFromRouter.audio_state === 'paused') || (statusFromKV && statusFromKV.audio_state === 'paused');
     const localIsFresh = fetchedFromRouter || phoneIsFresh;
     
     // Check if the current local metadata (from router/KV) is trash/mojibake
@@ -3977,6 +3979,20 @@ async function checkStatus() {
       startHxySlideshow();
       if (activePlayerCard) activePlayerCard.style.display = 'block';
       if (idlePlayerCard) idlePlayerCard.style.display = 'block';
+      
+      // Freeze progress bar in idle state
+      if (pd) {
+        pd.dataset.state = 'paused';
+        pd.dataset.speed = 0;
+        sp = 0;
+      }
+      u();
+      
+      // Stop visualizer animation in idle state
+      const viz = document.getElementById('visualizer');
+      if (viz) {
+        viz.classList.remove('playing');
+      }
       
       // Update active card with last played track metadata
       if (d.recent_tracks && d.recent_tracks.length > 0) {
