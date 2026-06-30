@@ -1399,7 +1399,8 @@ async function handleRequest(request, event) {
     
     const phoneIsFresh = (positionTs > 0 && (nowSec - positionTs <= 70));
     const phoneWasPaused = (statusFromRouter && statusFromRouter.audio_state === 'paused') || (statusFromKV && statusFromKV.audio_state === 'paused');
-    const localIsFresh = fetchedFromRouter || phoneIsFresh;
+    const routerIsFresh = !!(statusFromRouter && statusFromRouter.t && (nowSec - statusFromRouter.t <= 25));
+    const localIsFresh = fetchedFromRouter ? routerIsFresh : phoneIsFresh;
     
     // Check if the current local metadata (from router/KV) is trash/mojibake
     const localIsTrash = track.includes('\uFFFD') || (artist && artist.includes('\uFFFD')) ||
