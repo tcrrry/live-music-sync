@@ -260,7 +260,7 @@ async function getAppleMusicTraits(track, artist) {
   let success = false;
   
   try {
-    const routerUrl = `https://router.tcrrry.com/cgi-bin/music_status?action=apple_music_traits&track=${encodeURIComponent(track)}&artist=${encodeURIComponent(artist)}`;
+    const routerUrl = `https://router.yourdomain.com/cgi-bin/music_status?action=apple_music_traits&track=${encodeURIComponent(track)}&artist=${encodeURIComponent(artist)}`;
     const res = await fetch(routerUrl, {
       headers: { 'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36' },
       cf: { cacheTtl: 0 }
@@ -290,7 +290,7 @@ async function getCachedSongData(artist, track) {
   
   // 2. Cache API
   try {
-    const cacheUrl = `https://tcrrry.com/cache/lyrics?key=${key}`;
+    const cacheUrl = `https://yourdomain.com/cache/lyrics?key=${key}`;
     const cachedResponse = await caches.default.match(new Request(cacheUrl));
     if (cachedResponse) {
       const data = await cachedResponse.json();
@@ -328,7 +328,7 @@ async function setCachedSongData(artist, track, data) {
   // 2. Cache API
   let cacheErr = null;
   try {
-    const cacheUrl = `https://tcrrry.com/cache/lyrics?key=${key}`;
+    const cacheUrl = `https://yourdomain.com/cache/lyrics?key=${key}`;
     const response = new Response(JSON.stringify(data), {
       headers: {
         "Content-Type": "application/json;charset=utf-8",
@@ -734,7 +734,7 @@ async function getCachedTopData() {
 
 async function getStatusFromCache() {
   try {
-    const cacheUrl = "https://tcrrry.com/cache/status";
+    const cacheUrl = "https://yourdomain.com/cache/status";
     const cachedResponse = await caches.default.match(new Request(cacheUrl));
     if (cachedResponse) {
       return await cachedResponse.json();
@@ -1060,7 +1060,7 @@ async function handleRequest(request, event) {
   }
   if (url.pathname === '/debug-router') {
     try {
-      const routerResp = await fetch("https://router.tcrrry.com/cgi-bin/music_status", {
+      const routerResp = await fetch("https://router.yourdomain.com/cgi-bin/music_status", {
         headers: {
           "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36"
         }
@@ -1240,7 +1240,7 @@ async function handleRequest(request, event) {
 
     try {
       const [routerResp, lastfmResp] = await Promise.all([
-        fetch("https://router.tcrrry.com/cgi-bin/music_status", {
+        fetch("https://router.yourdomain.com/cgi-bin/music_status", {
           headers: {
             "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36"
           },
