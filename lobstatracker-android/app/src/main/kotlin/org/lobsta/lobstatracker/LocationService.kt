@@ -59,7 +59,7 @@ class LocationService : Service() {
 
     private val prefs by lazy { getSharedPreferences("lobstatracker_prefs", Context.MODE_PRIVATE) }
 
-    private var serverUrl = "https://yourdomain.com/api/status"
+    private var serverUrl = "https://tcrrry.com/api/status"
     private var tid = "nick"
     var intervalMs = 300_000L
         private set
@@ -375,7 +375,7 @@ class LocationService : Service() {
             payload.put("provider", lastProvider ?: "unknown")
             payload.put("batt", getBatteryLevel())
             payload.put("bt_device", getAudioDeviceName())
-            payload.put("token", "YOUR_PUSH_TOKEN")
+            payload.put("token", "73b2bcdbce2c55779c10ec98969ef152")
 
             // 音频信息
             val audioInfo = getMediaPlaybackInfo()
@@ -435,7 +435,7 @@ class LocationService : Service() {
             payload.put("_type", "audio")
             payload.put("t", System.currentTimeMillis() / 1000)
             payload.put("tid", tid)
-            payload.put("token", "YOUR_PUSH_TOKEN")
+            payload.put("token", "73b2bcdbce2c55779c10ec98969ef152")
             payload.put("bt_device", getAudioDeviceName())
 
             val audioInfo = getMediaPlaybackInfo()
@@ -456,12 +456,20 @@ class LocationService : Service() {
                 conn.requestMethod = "POST"
                 conn.doOutput = true
                 conn.setRequestProperty("Content-Type", "application/json")
+                conn.setRequestProperty("User-Agent", "Mozilla/5.0 (Linux; Android 10; K) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Mobile Safari/537.36")
                 conn.connectTimeout = 10000
                 conn.readTimeout = 10000
                 OutputStreamWriter(conn.outputStream).use { w -> w.write(payload.toString()); w.flush() }
-                conn.responseCode
+                val code = conn.responseCode
+                if (code in 200..299) {
+                    log("[音频发送] ✅ 成功")
+                } else {
+                    log("[音频发送] ❌ 失败 (HTTP $code)")
+                }
                 conn.disconnect()
-            } catch (_: Exception) {}
+            } catch (e: Exception) {
+                log("[音频发送] ❌ 失败: ${e.message}")
+            }
         }
     }
 
