@@ -9,12 +9,10 @@ function sanitizeMetadata(track, artist) {
   }
   
   const trackLower = cleanTrack.toLowerCase();
-  // 'ʽ΢' (with uppercase Greek yot ΢ U+03A2) becomes 'ʽΰ' (with lowercase yot ΰ U+03F3) in trackLower.
-  // We check both the raw cleanTrack and the lowercase string with 'ʽΰ'.
-  if (cleanTrack.includes('ʽ΢') || trackLower.includes('ʽΰ') || trackLower.includes('shivi') || trackLower.includes('式微')) {
+  if (cleanTrack.includes('式微') || trackLower.includes('shivi') || trackLower.includes('式微')) {
     cleanTrack = '式微 (《牧神记》动画片尾曲)';
     cleanArtist = '黄霄雲';
-  } else if (cleanTrack.includes('ʢ') || trackLower.includes('ʢ') || trackLower.includes('莲花') || trackLower.includes('lianhua') || trackLower.includes('盛开')) {
+  } else if (cleanTrack.includes('莲花') || trackLower.includes('lianhua') || trackLower.includes('盛开')) {
     cleanTrack = '莲花盛开 (庆祝澳门回归25周年青春献礼歌)';
     cleanArtist = '黄霄雲';
   }
@@ -1602,7 +1600,7 @@ async function handleRequest(request, event) {
     if (trackParam) {
       const bypassCache = url.searchParams.get('bypass_cache') === '1';
       const cached = bypassCache ? null : await getCachedSongData(artistParam, trackParam);
-      if (cached && cached.lyrics && 'lossless' in cached) {
+      if (cached && cached.lyrics && cached.cover && 'lossless' in cached) {
         cover = cached.cover;
         lyricsText = cached.lyrics;
         duration = cached.duration;
@@ -1704,7 +1702,7 @@ async function handleRequest(request, event) {
       debugError = "Cache read error: " + e.message;
     }
     
-    if (cached && cached.lyrics && 'lossless' in cached) {
+    if (cached && cached.lyrics && cached.cover && 'lossless' in cached) {
       artUrl = cached.cover;
       lyrics = cached.lyrics;
       if (cached.duration) durationMs = cached.duration;
