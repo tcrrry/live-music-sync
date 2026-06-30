@@ -375,7 +375,7 @@ class LocationService : Service() {
             payload.put("provider", lastProvider ?: "unknown")
             payload.put("batt", getBatteryLevel())
             payload.put("bt_device", getAudioDeviceName())
-            payload.put("token", "73b2bcdbce2c55779c10ec98969ef152")
+            payload.put("token", "YOUR_PUSH_TOKEN")
 
             // 音频信息
             val audioInfo = getMediaPlaybackInfo()
@@ -435,7 +435,7 @@ class LocationService : Service() {
             payload.put("_type", "audio")
             payload.put("t", System.currentTimeMillis() / 1000)
             payload.put("tid", tid)
-            payload.put("token", "73b2bcdbce2c55779c10ec98969ef152")
+            payload.put("token", "YOUR_PUSH_TOKEN")
             payload.put("bt_device", getAudioDeviceName())
 
             val audioInfo = getMediaPlaybackInfo()
