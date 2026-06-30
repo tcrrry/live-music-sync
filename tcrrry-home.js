@@ -378,7 +378,12 @@ async function getQQMusicData(track, artist) {
       const albummid = song.albummid;
       const songmid = song.songmid;
       if (albummid) {
-        cover = `https://y.gtimg.cn/music/photo_new/T002R800x800M000${albummid}.jpg`;
+        if (/^\d+$/.test(albummid)) {
+          const albumid = song.albumid || parseInt(albummid);
+          cover = `https://y.gtimg.cn/music/photo/album_500/${albumid % 100}/500_albumpic_${albumid}_0.jpg`;
+        } else {
+          cover = `https://y.gtimg.cn/music/photo_new/T002R800x800M000${albummid}.jpg`;
+        }
       }
       if (song.interval) {
         duration = song.interval * 1000;
@@ -471,6 +476,46 @@ async function getNetEaseMusicData(track, artist) {
         const lData = await lRes.json();
         if (lData?.lrc?.lyric) {
           lyrics = lData.lrc.lyric;
+        }
+      }
+    }
+  } catch (e) {}
+  return { cover, lyrics, duration };
+}
+
+async function getKugouMusicData(track, artist) {
+  let cover = '', lyrics = '', duration = 0;
+  try {
+    const query = `${track} ${artist}`;
+    const cleanQuery = cleanName(query);
+    const searchUrl = `http://mobilecdn.kugou.com/api/v3/search/song?keyword=${encodeURIComponent(cleanQuery)}&page=1&pagesize=3`;
+    const sRes = await fetch(searchUrl, { headers: { 'User-Agent': 'Mozilla/5.0' } });
+    const sData = await sRes.json();
+    const song = sData?.data?.info?.[0];
+    if (song) {
+      const hash = song.hash;
+      if (song.duration) {
+        duration = song.duration * 1000;
+      }
+      if (hash) {
+        const lyricUrl = `http://krcs.kugou.com/search?ver=1&man=yes&client=mobi&hash=${hash}`;
+        const lRes = await fetch(lyricUrl, { headers: { 'User-Agent': 'Mozilla/5.0' } });
+        const lData = await lRes.json();
+        const candidate = lData?.candidates?.[0];
+        if (candidate) {
+          const lyricId = candidate.id;
+          const accesskey = candidate.accesskey;
+          if (lyricId && accesskey) {
+            const downloadUrl = `http://lyrics.kugou.com/download?ver=1&client=pc&id=${lyricId}&accesskey=${accesskey}&fmt=lrc&charset=utf8`;
+            const dRes = await fetch(downloadUrl, { headers: { 'User-Agent': 'Mozilla/5.0' } });
+            const dData = await dRes.json();
+            const contentBase64 = dData?.content;
+            if (contentBase64) {
+              const decoded = atob(contentBase64);
+              const bytes = new Uint8Array(decoded.split('').map(c => c.charCodeAt(0)));
+              lyrics = new TextDecoder('utf-8').decode(bytes);
+            }
+          }
         }
       }
     }
@@ -1577,6 +1622,13 @@ async function handleRequest(request, event) {
           if (!duration && neData.duration) duration = neData.duration;
         }
         
+        if (!lyricsText) {
+          const kgData = await getKugouMusicData(trackParam, artistParam);
+          if (!cover && kgData.cover) cover = kgData.cover;
+          if (!lyricsText && kgData.lyrics) lyricsText = kgData.lyrics;
+          if (!duration && kgData.duration) duration = kgData.duration;
+        }
+        
         const traits = await getAppleMusicTraits(trackParam, artistParam);
         lossless = traits.lossless;
         hiResLossless = traits.hiResLossless;
@@ -1670,6 +1722,13 @@ async function handleRequest(request, event) {
         if (!artUrl && neData.cover) artUrl = neData.cover;
         if (!lyrics && neData.lyrics) lyrics = neData.lyrics;
         if (!durationMs && neData.duration) durationMs = neData.duration;
+      }
+      
+      if (!lyrics) {
+        const kgData = await getKugouMusicData(track, artist);
+        if (!artUrl && kgData.cover) artUrl = kgData.cover;
+        if (!lyrics && kgData.lyrics) lyrics = kgData.lyrics;
+        if (!durationMs && kgData.duration) durationMs = kgData.duration;
       }
       
       const traits = await getAppleMusicTraits(track, artist);
