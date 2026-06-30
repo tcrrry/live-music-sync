@@ -1407,7 +1407,7 @@ async function handleRequest(request, event) {
                          /[\u0250-\u03FF]/.test(track) || (artist && /[\u0250-\u03FF]/.test(artist)) ||
                          track.includes('ʽ') || track.includes('΢');
                          
-    const preserveLocal = !!(localIsFresh && track && !localIsTrash);
+    const preserveLocal = !!(localIsFresh && track && !localIsTrash && isSameSong);
     
     // Only override to playing if it is a different song, or if the phone was not explicitly paused
     const shouldOverridePlayState = !isSameSong || (!phoneWasPaused && !phoneIsFresh) || (phoneIsFresh && nowPlaying);
